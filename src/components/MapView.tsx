@@ -174,6 +174,7 @@ export function MapView({
 }: MapViewProps) {
   const selectedReport = reports.find((r) => r.id === selectedId) ?? null
   const [userLocation, setUserLocation] = useState<[number, number]>(DEFAULT_USER_LOCATION)
+  const [tilesUnavailable, setTilesUnavailable] = useState(false)
 
   const handleUserLocation = useCallback(
     (pos: [number, number]) => {
@@ -201,6 +202,10 @@ export function MapView({
       <TileLayer
         attribution='&copy; <a href="https://carto.com/">CARTO</a> &copy; OpenStreetMap'
         url={BASEMAP_URL}
+        eventHandlers={{
+          tileload: () => setTilesUnavailable(false),
+          tileerror: () => setTilesUnavailable(true),
+        }}
       />
 
       <MapController selectedReport={selectedReport} fitAll={reports} />
@@ -224,6 +229,13 @@ export function MapView({
       />
 
       <MapClickHandler onClear={onClearSelection} />
+      {tilesUnavailable && (
+        <div className="leaflet-top leaflet-left pointer-events-none" role="status">
+          <div className="leaflet-control m-4 rounded-xl bg-white/95 px-4 py-3 text-sm text-slate-700 shadow-lg">
+            Map imagery is unavailable. Nearby reports remain accessible in the list.
+          </div>
+        </div>
+      )}
     </MapContainer>
   )
 }
