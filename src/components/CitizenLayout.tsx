@@ -17,7 +17,7 @@ export function CitizenLayout() {
     <div className="min-h-dvh flex flex-col bg-[var(--color-fw-surface-secondary)]">
       <NavTopBar />
       <main className="flex-1 flex flex-col min-h-0 overflow-hidden px-3 pb-20 lg:px-4 lg:pb-4">
-        <div className="flex-1 flex flex-col min-h-0 fw-glass-panel rounded-2xl overflow-hidden bg-white/90">
+        <div className="flex-1 flex flex-col min-h-0 fw-float-panel overflow-hidden">
           <Outlet />
         </div>
       </main>
