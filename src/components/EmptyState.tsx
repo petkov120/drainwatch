@@ -18,11 +18,11 @@ export function EmptyState({ title, description, action }: EmptyStateProps) {
           <circle cx="12" cy="10" r="3" />
         </svg>
       </div>
-      <h3 className="text-[17px] font-semibold text-[var(--color-fw-text)]">{title}</h3>
-      <p className="text-[14px] text-[var(--color-fw-text-secondary)] mt-2 max-w-[280px] leading-relaxed">
+      <h3 className="fw-type-title text-[1.0625rem]">{title}</h3>
+      <p className="fw-type-body text-[var(--color-fw-text-secondary)] mt-2 max-w-[280px]">
         {description}
       </p>
-      {action && <div className="mt-6">{action}</div>}
+      {action && <div className="mt-7">{action}</div>}
     </div>
   )
 }
