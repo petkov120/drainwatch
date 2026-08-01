@@ -25,11 +25,19 @@ export function saveOnboardingCompleted(): void {
     completed: true,
     completedAt: new Date().toISOString(),
   }
-  localStorage.setItem(ONBOARDING_STORAGE_KEY, JSON.stringify(store))
+  try {
+    localStorage.setItem(ONBOARDING_STORAGE_KEY, JSON.stringify(store))
+  } catch {
+    // The tour can still complete for the current session without persistence.
+  }
 }
 
 export function clearOnboardingState(): void {
-  localStorage.removeItem(ONBOARDING_STORAGE_KEY)
+  try {
+    localStorage.removeItem(ONBOARDING_STORAGE_KEY)
+  } catch {
+    // Storage may be disabled by browser privacy settings.
+  }
 }
 
 export function shouldShowTour(): boolean {
