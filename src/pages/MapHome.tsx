@@ -9,6 +9,7 @@ import { EmptyState, ReportListSkeleton } from '../components/EmptyState'
 import { MapOverlayNav } from '../components/map/MapOverlayNav'
 import { MapUtilityBar } from '../components/map/MapUtilityBar'
 import { MapToolPill } from '../components/map/MapToolPill'
+import { ReportMascotFab } from '../components/map/ReportMascotFab'
 import { IssueTypeFilter } from '../components/map/IssueTypeFilter'
 import { NearbyPanelRail, PanelCollapseButton } from '../components/map/NearbyPanelRail'
 import { ScaleBarDisplay } from '../components/map/ScaleBar'
@@ -46,6 +47,13 @@ export function MapHomePage() {
   const filteredReports = useMemo(
     () => (filter === 'all' ? reports : reports.filter((r) => r.type === filter)),
     [filter, reports]
+  )
+
+  const openReportPage = useCallback(
+    (id: string) => {
+      navigate(`/reports/${id}`)
+    },
+    [navigate]
   )
 
   const selectReport = useCallback(
@@ -104,7 +112,7 @@ export function MapHomePage() {
         <MapView
           reports={filteredReports}
           selectedId={selectedId}
-          onSelectReport={selectReport}
+          onSelectReport={openReportPage}
           onClearSelection={clearSelection}
           recenterToken={recenterToken}
           onUserLocation={setUserLocation}
@@ -137,14 +145,17 @@ export function MapHomePage() {
         </div>
       </div>
 
-      {/* Bottom-left tools + scale */}
-      <div className="absolute bottom-20 lg:bottom-6 left-4 z-[400] flex items-end gap-2 pointer-events-none">
-        <MapToolPill onRecenter={handleRecenter} isLocating={isLocating} />
-        <div className="pointer-events-auto hidden lg:block">
-          <ScaleBarDisplay label={scaleLabel} widthPx={scaleWidth} />
-        </div>
-        <div className="pointer-events-auto hidden lg:block">
-          <MapLegend />
+      {/* Bottom-left — stationed report mascot + map tools */}
+      <div className="absolute bottom-20 lg:bottom-6 left-4 z-[400] flex flex-col items-start gap-3 pointer-events-none">
+        <ReportMascotFab />
+        <div className="flex items-end gap-2">
+          <MapToolPill onRecenter={handleRecenter} isLocating={isLocating} />
+          <div className="pointer-events-auto hidden lg:block">
+            <ScaleBarDisplay label={scaleLabel} widthPx={scaleWidth} />
+          </div>
+          <div className="pointer-events-auto hidden lg:block">
+            <MapLegend />
+          </div>
         </div>
       </div>
 
@@ -157,6 +168,7 @@ export function MapHomePage() {
           ${drawerOpen ? 'translate-y-0 lg:translate-x-0' : 'translate-y-full lg:translate-y-0 lg:translate-x-[calc(100%+1rem)]'}
         `}
         aria-label="Nearby reports"
+        data-tour="nearby-panel"
       >
         <div className="fw-float-panel flex-1 flex flex-col min-h-0 overflow-x-hidden">
           {isDesktop && panelCollapsed ? (
@@ -190,7 +202,7 @@ export function MapHomePage() {
                   </h2>
                   <PanelCollapseButton onClick={() => setPanelCollapsed(true)} />
                 </div>
-                <div className="px-5 pt-1 pb-4">
+                <div className="px-5 pt-1 pb-4" data-tour="issue-filter">
                   <IssueTypeFilter value={filter} onChange={setFilter} reports={reports} />
                 </div>
               </div>
