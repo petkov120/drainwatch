@@ -1,8 +1,12 @@
 import type { CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
+import { ProfileAvatar } from '../ProfileAvatar'
+import { useUser } from '../../context/UserContext'
 import { SearchBar } from '../SearchBar'
 
 export function MapUtilityBar({ style }: { style?: CSSProperties }) {
+  const { isSignedIn } = useUser()
+
   return (
     <div
       className="absolute top-4 z-[500] hidden lg:flex pointer-events-none transition-[right] duration-300 ease-out"
@@ -16,10 +20,10 @@ export function MapUtilityBar({ style }: { style?: CSSProperties }) {
         <span className="w-px h-5 bg-[var(--color-fw-divider)] shrink-0" aria-hidden />
         <Link
           to="/profile"
-          className="w-8 h-8 rounded-full bg-[var(--color-fw-primary-container)] text-[var(--color-fw-primary)] flex items-center justify-center text-xs font-bold no-underline hover:no-underline shrink-0"
-          aria-label="Profile"
+          className="no-underline hover:no-underline shrink-0"
+          aria-label={isSignedIn ? 'Profile' : 'Sign in'}
         >
-          AO
+          <ProfileAvatar />
         </Link>
       </div>
     </div>
