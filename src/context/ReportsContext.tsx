@@ -6,7 +6,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import type { Report, ReportStatus, TimelineEvent, GovResponse } from '../data/mock'
+import type { Report, ReportStatus, TimelineEvent, GovResponse, Comment } from '../data/mock'
 import {
   clearReportsStorage,
   formatReportTimestamp,
@@ -22,6 +22,7 @@ interface ReportsContextValue {
   getReport: (id: string) => Report | undefined
   updateStatus: (id: string, status: ReportStatus) => void
   confirmReport: (id: string) => void
+  addComment: (id: string, text: string) => void
   hasConfirmed: (id: string) => boolean
   resetDemo: () => void
 }
@@ -156,6 +157,29 @@ export function ReportsProvider({ children }: { children: ReactNode }) {
     [confirmedIds, persistReports, reports]
   )
 
+  const addComment = useCallback(
+    (id: string, text: string) => {
+      const trimmed = text.trim()
+      if (!trimmed) return
+
+      const comment: Comment = {
+        id: `c-${Date.now()}`,
+        author: 'You',
+        text: trimmed,
+        time: 'Just now',
+      }
+
+      persistReports(
+        reports.map((report) =>
+          report.id === id
+            ? { ...report, comments: [...report.comments, comment] }
+            : report
+        )
+      )
+    },
+    [persistReports, reports]
+  )
+
   const resetDemo = useCallback(() => {
     clearReportsStorage()
     const fresh = seedReports()
@@ -170,10 +194,11 @@ export function ReportsProvider({ children }: { children: ReactNode }) {
       getReport,
       updateStatus,
       confirmReport,
+      addComment,
       hasConfirmed,
       resetDemo,
     }),
-    [reports, getReport, updateStatus, confirmReport, hasConfirmed, resetDemo]
+    [reports, getReport, updateStatus, confirmReport, addComment, hasConfirmed, resetDemo]
   )
 
   return <ReportsContext.Provider value={value}>{children}</ReportsContext.Provider>
