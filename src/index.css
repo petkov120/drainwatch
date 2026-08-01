@@ -40,7 +40,7 @@
   --shadow-fw-md: 0 2px 8px rgba(0, 0, 0, 0.06), 0 4px 16px rgba(0, 0, 0, 0.04);
   --shadow-fw-lg: 0 4px 16px rgba(0, 0, 0, 0.08), 0 8px 32px rgba(0, 0, 0, 0.06);
   --shadow-fw-float: 0 2px 12px rgba(0, 0, 0, 0.12), 0 0 1px rgba(0, 0, 0, 0.08);
-  --font-fw: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-fw: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   --fw-tracking-tight: -0.025em;
   --fw-tracking-normal: -0.012em;
   --fw-tracking-wide: 0.04em;
