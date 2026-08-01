@@ -39,7 +39,7 @@ export function ProfilePage() {
           <div className="p-5 fw-panel-card text-center space-y-4">
             <ProfileAvatar size="md" className="mx-auto" />
             <div>
-              <p className="fw-type-title">Sign in to FloodWatch</p>
+              <p className="fw-type-title">Sign in to Drainwatch</p>
               <p className="fw-type-meta mt-1">Track reports and save your preferences</p>
             </div>
             <button type="button" className="fw-btn-primary w-full" onClick={signIn}>
@@ -95,7 +95,7 @@ export function ProfilePage() {
         </ul>
 
         <footer className="mt-10 fw-type-caption space-y-1.5 px-1">
-          <p>FloodWatch · Lagos · A civic reporting tool</p>
+          <p>Drainwatch · Lagos · A civic reporting tool</p>
           <p>Version 1.0.0</p>
         </footer>
       </div>
