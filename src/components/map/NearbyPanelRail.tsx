@@ -1,5 +1,7 @@
 import type { CSSProperties } from 'react'
 import type { Report } from '../../data/mock'
+import { issueTypeLabels, statusLabels } from '../../data/mock'
+import { FwTooltip } from '../FwTooltip'
 import { IssueSceneThumb } from './IssueSceneThumb'
 
 const issueRing: Record<Report['type'], string> = {
@@ -29,6 +31,10 @@ function ChevronLeftIcon() {
   )
 }
 
+function railItemTooltip(report: Report) {
+  return `${report.location} · ${issueTypeLabels[report.type]} · ${statusLabels[report.status]}`
+}
+
 export function NearbyPanelRail({
   reports,
   selectedId,
@@ -37,14 +43,16 @@ export function NearbyPanelRail({
 }: NearbyPanelRailProps) {
   return (
     <div className="fw-nearby-rail">
-      <button
-        type="button"
-        onClick={onExpand}
-        className="fw-nearby-rail-expand"
-        aria-label="Expand nearby panel"
-      >
-        <ChevronLeftIcon />
-      </button>
+      <FwTooltip label="Expand nearby panel" side="left">
+        <button
+          type="button"
+          onClick={onExpand}
+          className="fw-nearby-rail-expand"
+          aria-label="Expand nearby panel"
+        >
+          <ChevronLeftIcon />
+        </button>
+      </FwTooltip>
 
       <span className="fw-nearby-rail-label" aria-hidden>
         {reports.length}
@@ -55,21 +63,21 @@ export function NearbyPanelRail({
           const selected = report.id === selectedId
           const ring = issueRing[report.type]
           return (
-            <button
-              key={report.id}
-              type="button"
-              title={report.location}
-              aria-label={report.location}
-              aria-current={selected ? 'true' : undefined}
-              onClick={() => {
-                onSelectReport(report.id)
-                onExpand()
-              }}
-              className={`fw-nearby-rail-item ${selected ? 'is-selected' : ''}`}
-              style={{ '--rail-ring': ring } as CSSProperties}
-            >
-              <IssueSceneThumb scene={report.type} size={28} className="block rounded-md" />
-            </button>
+            <FwTooltip key={report.id} label={railItemTooltip(report)} side="left">
+              <button
+                type="button"
+                aria-label={railItemTooltip(report)}
+                aria-current={selected ? 'true' : undefined}
+                onClick={() => {
+                  onSelectReport(report.id)
+                  onExpand()
+                }}
+                className={`fw-nearby-rail-item ${selected ? 'is-selected' : ''}`}
+                style={{ '--rail-ring': ring } as CSSProperties}
+              >
+                <IssueSceneThumb scene={report.type} size={28} className="block rounded-md" />
+              </button>
+            </FwTooltip>
           )
         })}
       </div>
@@ -93,13 +101,15 @@ function ChevronRightIcon() {
 
 export function PanelCollapseButton({ onClick }: { onClick: () => void }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="fw-panel-collapse-btn"
-      aria-label="Collapse to rail"
-    >
-      <ChevronRightIcon />
-    </button>
+    <FwTooltip label="Collapse to rail" side="left">
+      <button
+        type="button"
+        onClick={onClick}
+        className="fw-panel-collapse-btn"
+        aria-label="Collapse to rail"
+      >
+        <ChevronRightIcon />
+      </button>
+    </FwTooltip>
   )
 }
