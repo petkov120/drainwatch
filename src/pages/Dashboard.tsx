@@ -1,17 +1,34 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Infobox, InfoboxRow } from '../components/Infobox'
 import { IssueDot, StatusDot } from '../components/IssueMarker'
+import { useReports } from '../context/ReportsContext'
 import {
-  mockReports,
   dashboardStats,
   issueTypeLabels,
   statusLabels,
-  Report,
   ReportStatus,
 } from '../data/mock'
 
 export function DashboardPage() {
-  const [selectedReport, setSelectedReport] = useState<Report | null>(mockReports[0])
+  const { reports, updateStatus } = useReports()
+  const [selectedId, setSelectedId] = useState(reports[0]?.id ?? '')
+
+  const selectedReport = reports.find((r) => r.id === selectedId) ?? reports[0] ?? null
+
+  useEffect(() => {
+    if (!reports.some((r) => r.id === selectedId) && reports[0]) {
+      setSelectedId(reports[0].id)
+    }
+  }, [reports, selectedId])
+
+  const liveStats = useMemo(
+    () => ({
+      total: reports.length,
+      active: reports.filter((r) => r.status !== 'resolved').length,
+      resolved: reports.filter((r) => r.status === 'resolved').length,
+    }),
+    [reports]
+  )
 
   return (
     <div className="flex-1 flex flex-col min-h-0 min-h-dvh lg:min-h-0">
@@ -22,25 +39,23 @@ export function DashboardPage() {
 
       <div className="flex-1 overflow-hidden flex min-h-0">
         <main className="flex-1 overflow-y-auto p-6 space-y-6">
-            {/* Stats */}
             <div className="grid grid-cols-3 gap-4">
-              <StatCard label="Total reports" value={dashboardStats.total} />
-              <StatCard label="Active incidents" value={dashboardStats.active} />
-              <StatCard label="Resolved" value={dashboardStats.resolved} />
+              <StatCard label="Demo reports" value={liveStats.total} />
+              <StatCard label="Active incidents" value={liveStats.active} />
+              <StatCard label="Resolved" value={liveStats.resolved} />
             </div>
 
             <div className="grid grid-cols-3 gap-6">
-              {/* Heat map */}
               <section className="col-span-2 border border-[var(--color-fw-border)]">
                 <h2 className="px-4 py-3 text-sm font-medium border-b border-[var(--color-fw-divider)]">
                   Heat map
                 </h2>
                 <div className="aspect-[16/9] fw-map-bg relative min-h-[280px]">
-                  {mockReports.map((r, i) => (
+                  {reports.map((r, i) => (
                     <button
                       key={r.id}
                       type="button"
-                      onClick={() => setSelectedReport(r)}
+                      onClick={() => setSelectedId(r.id)}
                       className="absolute w-8 h-8 rounded-full opacity-60 hover:opacity-100 border-0 cursor-pointer -translate-x-1/2 -translate-y-1/2"
                       style={{
                         top: `${30 + i * 15}%`,
@@ -58,7 +73,6 @@ export function DashboardPage() {
                 </div>
               </section>
 
-              {/* By category */}
               <section className="border border-[var(--color-fw-border)]">
                 <h2 className="px-4 py-3 text-sm font-medium border-b border-[var(--color-fw-divider)]">
                   Reports by category
@@ -93,13 +107,12 @@ export function DashboardPage() {
               </section>
             </div>
 
-            {/* Table */}
             <section className="border border-[var(--color-fw-border)]">
               <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--color-fw-divider)]">
                 <h2 className="text-sm font-medium">Recent reports</h2>
-                <button type="button" className="text-sm text-[var(--color-fw-link)] bg-transparent border-none cursor-pointer hover:underline">
-                  Download CSV
-                </button>
+                <p className="text-xs text-[var(--color-fw-text-tertiary)]">
+                  Status changes sync to Nearby
+                </p>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
@@ -114,10 +127,10 @@ export function DashboardPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {mockReports.map((r) => (
+                    {reports.map((r) => (
                       <tr
                         key={r.id}
-                        onClick={() => setSelectedReport(r)}
+                        onClick={() => setSelectedId(r.id)}
                         className={`border-b border-[var(--color-fw-divider)] cursor-pointer hover:bg-[var(--color-fw-surface-secondary)] ${
                           selectedReport?.id === r.id ? 'bg-[var(--color-fw-primary-container)]' : ''
                         }`}
@@ -148,7 +161,6 @@ export function DashboardPage() {
             </section>
           </main>
 
-          {/* Detail panel */}
           {selectedReport && (
             <aside className="w-80 shrink-0 border-l border-[var(--color-fw-divider)] overflow-y-auto">
               <div className="p-4 border-b border-[var(--color-fw-divider)]">
@@ -168,7 +180,7 @@ export function DashboardPage() {
                     value={
                       <StatusSelect
                         status={selectedReport.status}
-                        onChange={() => {}}
+                        onChange={(status) => updateStatus(selectedReport.id, status)}
                       />
                     }
                   />
@@ -176,20 +188,9 @@ export function DashboardPage() {
                   <InfoboxRow label="Location" value={selectedReport.location} />
                   <InfoboxRow label="Confirmations" value={selectedReport.confirmations} />
                 </Infobox>
-                <div>
-                  <label htmlFor="notes" className="text-xs text-[var(--color-fw-text-secondary)] block mb-1">
-                    Internal notes
-                  </label>
-                  <textarea
-                    id="notes"
-                    rows={3}
-                    placeholder="Add note for response team…"
-                    className="w-full border border-[var(--color-fw-border)] p-2 text-sm resize-none outline-none focus:border-[var(--color-fw-primary)]"
-                  />
-                </div>
-                <button type="button" className="fw-btn-primary w-full">
-                  Save changes
-                </button>
+                <p className="text-xs text-[var(--color-fw-text-secondary)] leading-relaxed">
+                  Changing status adds timeline events and updates the citizen progress bar on Nearby.
+                </p>
               </div>
             </aside>
           )}
