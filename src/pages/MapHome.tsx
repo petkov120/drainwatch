@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { SearchBar } from '../components/SearchBar'
 import { NearbyReportCard } from '../components/NearbyReportCard'
-import { MapView, DEFAULT_USER_LOCATION } from '../components/MapView'
 import { ReportDetailPanel } from '../components/ReportDetailPanel'
 import { MapLegend } from '../components/MapLegend'
 import { EmptyState, ReportListSkeleton } from '../components/EmptyState'
@@ -19,6 +18,19 @@ import { useIsDesktop } from '../hooks/useMediaQuery'
 import { formatDistanceBearing } from '../lib/geo-utils'
 
 type FilterType = 'all' | IssueType
+
+const DEFAULT_USER_LOCATION: [number, number] = [6.4474, 3.462]
+const MapView = lazy(() =>
+  import('../components/MapView').then((module) => ({ default: module.MapView }))
+)
+
+function MapFallback() {
+  return (
+    <div className="h-full w-full bg-[#dfe9e4]" role="status" aria-label="Loading map">
+      <div className="h-full w-full opacity-40 fw-map-vignette" aria-hidden />
+    </div>
+  )
+}
 
 export function MapHomePage() {
   const isDesktop = useIsDesktop()
@@ -109,15 +121,17 @@ export function MapHomePage() {
     <div className="absolute inset-0 overflow-hidden">
       {/* Full-bleed map */}
       <div className="absolute inset-0">
-        <MapView
-          reports={filteredReports}
-          selectedId={selectedId}
-          onSelectReport={openReportPage}
-          onClearSelection={clearSelection}
-          recenterToken={recenterToken}
-          onUserLocation={setUserLocation}
-          onScaleChange={handleScaleChange}
-        />
+        <Suspense fallback={<MapFallback />}>
+          <MapView
+            reports={filteredReports}
+            selectedId={selectedId}
+            onSelectReport={openReportPage}
+            onClearSelection={clearSelection}
+            recenterToken={recenterToken}
+            onUserLocation={setUserLocation}
+            onScaleChange={handleScaleChange}
+          />
+        </Suspense>
       </div>
 
       {/* Cartographic vignette */}
