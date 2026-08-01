@@ -1,70 +1,114 @@
-import { issueTypeLabels } from '../data/mock'
-import { severityLabels } from '../data/mock'
+import { useState } from 'react'
+import { issueTypeLabels, severityLabels } from '../data/mock'
+import type { IssueType, Severity } from '../data/mock'
+import { IssueSceneThumb } from './map/IssueSceneThumb'
+
+const issueTypes: IssueType[] = ['flooded', 'blocked', 'dumping']
+
+const severities: Severity[] = ['low', 'moderate', 'high', 'critical']
+
+const severityColor: Record<Severity, string> = {
+  low: '#059669',
+  moderate: '#d97706',
+  high: '#dc2626',
+  critical: '#991b1b',
+}
+
+const severityRing: Record<Severity, number> = {
+  low: 2,
+  moderate: 3,
+  high: 4,
+  critical: 5,
+}
 
 export function MapLegend() {
+  const [open, setOpen] = useState(false)
+
   return (
-    <div className="fw-map-legend" role="region" aria-label="Map legend">
-      <p className="font-semibold text-[var(--color-fw-text)] mb-2">Legend</p>
-      <div className="space-y-1.5 text-[var(--color-fw-text-secondary)]">
-        <LegendRow shape="circle" color="#0071e3" label={issueTypeLabels.flooded} />
-        <LegendRow shape="diamond" color="#7c3aed" label={issueTypeLabels.blocked} />
-        <LegendRow shape="square" color="#b45309" label={issueTypeLabels.dumping} />
-        <div className="border-t border-[var(--color-fw-divider)] my-2 pt-2">
-          <p className="font-medium text-[var(--color-fw-text)] mb-1">Severity ring</p>
-          {(['low', 'moderate', 'high', 'critical'] as const).map((s) => (
-            <div key={s} className="flex items-center gap-2 mt-1">
-              <span
-                className="w-4 h-4 rounded-full border-2 border-white"
-                style={{
-                  boxShadow: `0 0 0 ${s === 'low' ? 2 : s === 'moderate' ? 3 : s === 'high' ? 4 : 5}px ${
-                    s === 'low' ? '#059669' : s === 'moderate' ? '#d97706' : s === 'high' ? '#dc2626' : '#991b1b'
-                  }`,
-                }}
-                aria-hidden
-              />
-              <span>{severityLabels[s]}</span>
-            </div>
-          ))}
+    <div className="fw-map-legend-wrap">
+      {open && (
+        <div id="map-legend-panel" className="fw-map-legend-panel" role="region" aria-label="Map legend">
+          <div className="fw-map-legend-section">
+            <p className="fw-map-legend-heading">Issue type</p>
+            <ul className="fw-map-legend-types">
+              {issueTypes.map((type) => (
+                <li key={type} className="fw-map-legend-type">
+                  <span className="fw-map-legend-type-icon">
+                    <IssueSceneThumb scene={type} size={24} />
+                  </span>
+                  <span className="fw-map-legend-type-label">{issueTypeLabels[type]}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="fw-map-legend-section">
+            <p className="fw-map-legend-heading">Severity ring</p>
+            <ul className="fw-map-legend-severity">
+              {severities.map((s) => (
+                <li key={s} className="fw-map-legend-severity-item" title={severityLabels[s]}>
+                  <span
+                    className="fw-map-legend-severity-dot"
+                    style={{
+                      boxShadow: `0 0 0 ${severityRing[s]}px ${severityColor[s]}`,
+                    }}
+                    aria-hidden
+                  />
+                  <span className="fw-map-legend-severity-label">{severityLabels[s]}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <ul className="fw-map-legend-meta">
+            <li className="fw-map-legend-meta-item">
+              <span className="fw-map-legend-meta-icon fw-map-legend-meta-icon--a11y" aria-hidden>
+                ♿
+              </span>
+              <span>Accessibility</span>
+            </li>
+            <li className="fw-map-legend-meta-item">
+              <span className="fw-map-legend-meta-icon fw-map-legend-meta-icon--verified" aria-hidden>
+                <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
+                  <path
+                    d="M1.5 4l1.5 1.5 3.5-3.5"
+                    stroke="white"
+                    strokeWidth="1.25"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </span>
+              <span>Verified</span>
+            </li>
+          </ul>
         </div>
-        <div className="flex items-center gap-2 mt-1">
-          <span className="text-xs bg-[#1d1d1f] text-white w-4 h-4 rounded-full flex items-center justify-center" aria-hidden>♿</span>
-          <span>Accessibility impact</span>
-        </div>
-        <div className="flex items-center gap-2 mt-1">
-          <span className="w-4 h-4 rounded-full bg-emerald-500 border-2 border-white flex items-center justify-center" aria-hidden>
-            <svg width="8" height="8" viewBox="0 0 8 8" fill="white"><path d="M1 4l2 2 4-4" /></svg>
-          </span>
-          <span>Community verified</span>
-        </div>
-      </div>
+      )}
+
+      <button
+        type="button"
+        className="fw-map-legend-toggle"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        aria-controls="map-legend-panel"
+      >
+        <LegendMapIcon />
+        <span>Legend</span>
+      </button>
     </div>
   )
 }
 
-function LegendRow({
-  shape,
-  color,
-  label,
-}: {
-  shape: 'circle' | 'diamond' | 'square'
-  color: string
-  label: string
-}) {
-  const shapeStyle =
-    shape === 'circle'
-      ? 'rounded-full'
-      : shape === 'diamond'
-        ? 'rounded-sm rotate-45'
-        : 'rounded-sm'
-
+function LegendMapIcon() {
   return (
-    <div className="flex items-center gap-2">
-      <span
-        className={`w-4 h-4 ${shapeStyle} shrink-0`}
-        style={{ backgroundColor: color }}
-        aria-hidden
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden>
+      <path
+        d="M2 4.5l4.5-2 4.5 2v7l-4.5-2-4.5 2V4.5z"
+        stroke="currentColor"
+        strokeWidth="1.25"
+        strokeLinejoin="round"
       />
-      <span>{label}</span>
-    </div>
+      <path d="M6.5 2.5v7M10 4.5v7" stroke="currentColor" strokeWidth="1.25" />
+    </svg>
   )
 }
