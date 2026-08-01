@@ -10,7 +10,7 @@ export function ScaleBarDisplay({
   widthPx: number
 }) {
   return (
-    <div className="fw-glass-chip px-3 py-2">
+    <div className="fw-float-pill px-3 py-2">
       <div className="fw-scale-bar" role="img" aria-label={`Map scale: ${label}`}>
         <div className="fw-scale-line" style={{ width: widthPx }} />
         <span className="fw-scale-label">{label}</span>
