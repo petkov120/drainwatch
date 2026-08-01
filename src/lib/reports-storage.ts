@@ -14,6 +14,11 @@ export interface UserActionsStore {
   confirmedReportIds: string[]
 }
 
+function cloneSeedReports(): Report[] {
+  if (typeof structuredClone === 'function') return structuredClone(mockReports)
+  return JSON.parse(JSON.stringify(mockReports)) as Report[]
+}
+
 export function formatReportTimestamp(date = new Date()): string {
   return date.toLocaleString('en-GB', {
     day: 'numeric',
@@ -35,7 +40,7 @@ export function loadReportsFromStorage(): Report[] {
     }
     return parsed.reports
   } catch {
-    return seedReports()
+    return cloneSeedReports()
   }
 }
 
@@ -45,11 +50,15 @@ export function saveReportsToStorage(reports: Report[]): void {
     reports,
     updatedAt: new Date().toISOString(),
   }
-  localStorage.setItem(REPORTS_STORAGE_KEY, JSON.stringify(store))
+  try {
+    localStorage.setItem(REPORTS_STORAGE_KEY, JSON.stringify(store))
+  } catch {
+    // Keep the in-memory application usable when storage is unavailable.
+  }
 }
 
 export function seedReports(): Report[] {
-  const reports = structuredClone(mockReports)
+  const reports = cloneSeedReports()
   saveReportsToStorage(reports)
   return reports
 }
@@ -70,10 +79,18 @@ export function loadUserActions(): UserActionsStore {
 }
 
 export function saveUserActions(actions: UserActionsStore): void {
-  localStorage.setItem(USER_ACTIONS_STORAGE_KEY, JSON.stringify(actions))
+  try {
+    localStorage.setItem(USER_ACTIONS_STORAGE_KEY, JSON.stringify(actions))
+  } catch {
+    // Confirmation state remains available in memory for this session.
+  }
 }
 
 export function clearReportsStorage(): void {
-  localStorage.removeItem(REPORTS_STORAGE_KEY)
-  localStorage.removeItem(USER_ACTIONS_STORAGE_KEY)
+  try {
+    localStorage.removeItem(REPORTS_STORAGE_KEY)
+    localStorage.removeItem(USER_ACTIONS_STORAGE_KEY)
+  } catch {
+    // Reset the in-memory state even if persistent storage is unavailable.
+  }
 }
