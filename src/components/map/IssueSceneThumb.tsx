@@ -10,7 +10,7 @@ interface IssueSceneThumbProps {
   className?: string
 }
 
-function SceneDefs({ uid, showGrid }: { uid: string; showGrid: boolean }) {
+export function SceneDefs({ uid, showGrid }: { uid: string; showGrid: boolean }) {
   return (
     <defs>
       <filter id={`fw-grain-${uid}`} x="-20%" y="-20%" width="140%" height="140%">
@@ -41,7 +41,7 @@ function SceneDefs({ uid, showGrid }: { uid: string; showGrid: boolean }) {
   )
 }
 
-function SceneFinish({ uid, showGrid }: { uid: string; showGrid: boolean }) {
+export function SceneFinish({ uid, showGrid }: { uid: string; showGrid: boolean }) {
   return (
     <>
       {showGrid && <rect width="32" height="32" fill={`url(#fw-grid-${uid})`} />}
