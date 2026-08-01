@@ -19,6 +19,7 @@ interface ReportDetailPanelProps {
   report: Report
   onClose: () => void
   onCollapse?: () => void
+  showFullPageLink?: boolean
 }
 
 const statusSteps: { key: ReportStatus; label: string }[] = [
@@ -214,10 +215,126 @@ function ChevronIcon({ open }: { open: boolean }) {
   )
 }
 
-export function ReportDetailPanel({ report, onClose, onCollapse }: ReportDetailPanelProps) {
-  const { confirmReport, hasConfirmed } = useReports()
+function CommunitySection({ report }: { report: Report }) {
+  const { confirmReport, addComment, hasConfirmed } = useReports()
   const confirmed = hasConfirmed(report.id)
+  const [showForm, setShowForm] = useState(false)
+  const [commentText, setCommentText] = useState('')
 
+  const commentCount = report.comments.length
+  const subtitle =
+    commentCount > 0
+      ? `${report.confirmations} confirmations · ${commentCount} comment${commentCount === 1 ? '' : 's'}`
+      : `${report.confirmations} confirmations`
+
+  const handleSubmit = () => {
+    const trimmed = commentText.trim()
+    if (!trimmed) return
+    addComment(report.id, trimmed)
+    setCommentText('')
+    setShowForm(false)
+  }
+
+  const handleCancel = () => {
+    setCommentText('')
+    setShowForm(false)
+  }
+
+  return (
+    <CollapsibleSection title="Community" subtitle={subtitle} defaultOpen={commentCount > 0}>
+      <p className="fw-type-body text-[var(--color-fw-text-secondary)] mb-4">
+        <strong className="text-[var(--color-fw-text)] font-semibold">
+          {report.confirmations}
+        </strong>{' '}
+        people confirmed this report
+      </p>
+      <button
+        type="button"
+        onClick={() => confirmReport(report.id)}
+        disabled={confirmed}
+        className="fw-btn-primary w-full disabled:opacity-70"
+      >
+        {confirmed ? '✓ You confirmed this issue' : 'Confirm this issue'}
+      </button>
+
+      {commentCount > 0 && (
+        <ul className="mt-4 space-y-2.5" aria-label="Community comments">
+          {report.comments.map((c) => (
+            <li
+              key={c.id}
+              className={`fw-comment-card ${c.author === 'You' ? 'fw-comment-card--yours' : ''}`}
+            >
+              <p className="fw-type-caption normal-case tracking-normal">
+                {c.author} · {c.time}
+              </p>
+              <p className="fw-type-body">{c.text}</p>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {showForm ? (
+        <form
+          className="fw-comment-form mt-3"
+          onSubmit={(e) => {
+            e.preventDefault()
+            handleSubmit()
+          }}
+        >
+          <label htmlFor={`comment-${report.id}`} className="sr-only">
+            Add a comment
+          </label>
+          <textarea
+            id={`comment-${report.id}`}
+            rows={3}
+            maxLength={280}
+            value={commentText}
+            onChange={(e) => setCommentText(e.target.value)}
+            placeholder="Share an update for others nearby…"
+            className="fw-comment-input"
+            autoFocus
+          />
+          <div className="flex items-center justify-between gap-3 mt-2">
+            <p className="fw-type-caption normal-case tracking-normal text-[var(--color-fw-text-tertiary)]">
+              {commentText.length} / 280
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleCancel}
+                className="fw-comment-cancel"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={!commentText.trim()}
+                className="fw-comment-submit"
+              >
+                Post
+              </button>
+            </div>
+          </div>
+        </form>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setShowForm(true)}
+          className="mt-3 fw-type-body font-medium text-[var(--color-fw-link)] bg-transparent border-none cursor-pointer p-0 hover:underline"
+        >
+          Add comment
+        </button>
+      )}
+    </CollapsibleSection>
+  )
+}
+
+export function ReportDetailPanel({
+  report,
+  onClose,
+  onCollapse,
+  showFullPageLink = true,
+}: ReportDetailPanelProps) {
   const latestUpdate =
     report.govResponses[0]?.message ??
     report.timeline[report.timeline.length - 1]?.title ??
@@ -228,7 +345,7 @@ export function ReportDetailPanel({ report, onClose, onCollapse }: ReportDetailP
 
   return (
     <div className="flex flex-col h-full fw-panel-enter overflow-x-hidden min-w-0">
-      <header className="shrink-0 border-b border-[var(--color-fw-divider)] px-5 pt-4 pb-3 space-y-3">
+      <header className="fw-panel-header shrink-0 overflow-x-hidden px-5 pt-4 pb-3 space-y-3">
         <div className="flex items-center gap-3">
           <button
             type="button"
@@ -307,57 +424,18 @@ export function ReportDetailPanel({ report, onClose, onCollapse }: ReportDetailP
           <ReportTimeline events={report.timeline} />
         </CollapsibleSection>
 
-        <CollapsibleSection
-          title="Community"
-          subtitle={`${report.confirmations} confirmations`}
-        >
-          <p className="fw-type-body text-[var(--color-fw-text-secondary)] mb-4">
-            <strong className="text-[var(--color-fw-text)] font-semibold">
-              {report.confirmations}
-            </strong>{' '}
-            people confirmed this report
-          </p>
-          <button
-            type="button"
-            onClick={() => confirmReport(report.id)}
-            disabled={confirmed}
-            className="fw-btn-primary w-full disabled:opacity-70"
-          >
-            {confirmed ? '✓ You confirmed this issue' : 'Confirm this issue'}
-          </button>
+        <CommunitySection report={report} />
 
-          {report.comments.length > 0 && (
-            <ul className="mt-4 space-y-2.5" aria-label="Community comments">
-              {report.comments.map((c) => (
-                <li
-                  key={c.id}
-                  className="p-3.5 bg-white rounded-xl border border-[var(--color-fw-divider)] space-y-1"
-                >
-                  <p className="fw-type-caption normal-case tracking-normal">
-                    {c.author} · {c.time}
-                  </p>
-                  <p className="fw-type-body">{c.text}</p>
-                </li>
-              ))}
-            </ul>
-          )}
-
-          <button
-            type="button"
-            className="mt-3 fw-type-body font-medium text-[var(--color-fw-link)] bg-transparent border-none cursor-pointer p-0 hover:underline"
-          >
-            Add comment
-          </button>
-        </CollapsibleSection>
-
-        <div className="pt-1 pb-4">
-          <Link
-            to={`/reports/${report.id}`}
-            className="block text-center fw-type-body text-[var(--color-fw-link)] py-2"
-          >
-            Open full report page
-          </Link>
-        </div>
+        {showFullPageLink && (
+          <div className="pt-1 pb-4">
+            <Link
+              to={`/reports/${report.id}`}
+              className="block text-center fw-type-body text-[var(--color-fw-link)] py-2"
+            >
+              Open full report page
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   )
