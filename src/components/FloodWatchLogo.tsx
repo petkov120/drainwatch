@@ -1,0 +1,27 @@
+interface FloodWatchLogoProps {
+  size?: number
+  className?: string
+}
+
+export function FloodWatchLogo({ size = 32, className = '' }: FloodWatchLogoProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 64 64"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      aria-hidden="true"
+    >
+      <rect width="64" height="64" rx="16" fill="#087F5B" />
+      <path
+        d="M32 10C25.6 18.2 18 26.4 18 36.4C18 44.1 24.3 50 32 50C39.7 50 46 44.1 46 36.4C46 26.4 38.4 18.2 32 10Z"
+        fill="#D8F3DC"
+      />
+      <path d="M21 38H43" stroke="#087F5B" strokeWidth="4" strokeLinecap="round" />
+      <path d="M24 44H40" stroke="#087F5B" strokeWidth="4" strokeLinecap="round" />
+      <path d="M28 32H36" stroke="#087F5B" strokeWidth="4" strokeLinecap="round" />
+    </svg>
+  )
+}
