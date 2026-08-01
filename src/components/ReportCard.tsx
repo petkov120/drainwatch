@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom'
 import type { Report } from '../data/mock'
-import { issueTypeLabels, statusLabels } from '../data/mock'
-import { getSeverityColor } from '../lib/report-utils'
+import { issueTypeLabels } from '../data/mock'
 import {
   SeverityBadge,
   StatusBadge,
@@ -17,7 +16,6 @@ interface ReportCardProps {
   selected?: boolean
   onSelect?: (id: string) => void
   index?: number
-  variant?: 'full' | 'compact'
 }
 
 export function ReportCard({
@@ -27,25 +25,70 @@ export function ReportCard({
   selected,
   onSelect,
   index = 0,
-  variant = 'full',
 }: ReportCardProps) {
-  const className = `${
-    variant === 'compact' ? 'fw-report-card-compact' : 'fw-report-card'
-  } w-full text-left no-underline hover:no-underline ${selected ? 'fw-report-card-selected' : ''}`
+  const className = `fw-report-card w-full text-left no-underline hover:no-underline ${
+    selected ? 'fw-report-card-selected' : ''
+  }`
 
-  const content =
-    variant === 'compact' ? (
-      <CompactReportCardContent
-        report={report}
-        distanceBearing={distanceBearing ?? showDistance}
-      />
-    ) : (
-      <FullReportCardContent
-        report={report}
-        distanceBearing={distanceBearing}
-        showDistance={showDistance}
-      />
-    )
+  const content = (
+    <>
+      <div
+        className="w-14 h-14 shrink-0 rounded-xl bg-[var(--color-fw-surface-secondary)] border border-[var(--color-fw-divider)] flex items-center justify-center overflow-hidden"
+        aria-hidden
+      >
+        {report.photoCount > 0 ? (
+          <div className="w-full h-full bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center relative">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+              <rect x="3" y="5" width="18" height="14" rx="1" />
+            </svg>
+            {report.photoCount > 1 && (
+              <span className="absolute bottom-1 right-1 text-[10px] font-bold bg-black/50 text-white px-1 rounded">
+                {report.photoCount}
+              </span>
+            )}
+          </div>
+        ) : (
+          <IssueTypeIcon type={report.type} />
+        )}
+      </div>
+
+      <div className="flex-1 min-w-0 space-y-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="fw-type-caption">
+            {issueTypeLabels[report.type]}
+          </span>
+          <SeverityBadge severity={report.severity} />
+        </div>
+
+        <h3 className="fw-type-title truncate">
+          {report.location}
+        </h3>
+
+        <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+          <StatusBadge status={report.status} />
+          <VerificationBadge report={report} />
+          {report.accessibilityImpact !== 'none' && (
+            <AccessibilityBadge impact={report.accessibilityImpact} />
+          )}
+          {report.avoidArea && report.status !== 'resolved' && <AvoidBadge />}
+        </div>
+
+        <p className="fw-type-meta font-mono tracking-tight pt-0.5">
+          {report.reportedAt.split(',')[0]}
+          {(distanceBearing || showDistance) && (
+            <>
+              <span aria-hidden> · </span>
+              <span className="text-[var(--color-fw-text)] font-semibold">
+                {distanceBearing ?? showDistance}
+              </span>
+            </>
+          )}
+          <span aria-hidden> · </span>
+          {report.confirmations} confirmed
+        </p>
+      </div>
+    </>
+  )
 
   if (onSelect) {
     return (
@@ -74,122 +117,6 @@ export function ReportCard({
     <Link to={`/reports/${report.id}`} className={`${className} block`}>
       {content}
     </Link>
-  )
-}
-
-function FullReportCardContent({
-  report,
-  distanceBearing,
-  showDistance,
-}: {
-  report: Report
-  distanceBearing?: string
-  showDistance?: string
-}) {
-  return (
-    <>
-      <ReportThumb report={report} size="md" />
-      <div className="flex-1 min-w-0">
-        <div className="flex flex-wrap items-center gap-1.5 mb-1">
-          <span className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-fw-text-tertiary)]">
-            {issueTypeLabels[report.type]}
-          </span>
-          <SeverityBadge severity={report.severity} />
-        </div>
-
-        <h3 className="text-[15px] font-semibold text-[var(--color-fw-text)] leading-snug truncate">
-          {report.location}
-        </h3>
-
-        <div className="flex flex-wrap items-center gap-1.5 mt-2">
-          <StatusBadge status={report.status} />
-          <VerificationBadge report={report} />
-          {report.accessibilityImpact !== 'none' && (
-            <AccessibilityBadge impact={report.accessibilityImpact} />
-          )}
-          {report.avoidArea && report.status !== 'resolved' && <AvoidBadge />}
-        </div>
-
-        <p className="text-[13px] text-[var(--color-fw-text-secondary)] mt-2 font-mono tracking-tight">
-          {report.reportedAt.split(',')[0]}
-          {(distanceBearing || showDistance) && (
-            <>
-              <span aria-hidden> · </span>
-              <span className="text-[var(--color-fw-text)] font-semibold">
-                {distanceBearing ?? showDistance}
-              </span>
-            </>
-          )}
-          <span aria-hidden> · </span>
-          {report.confirmations} confirmed
-        </p>
-      </div>
-    </>
-  )
-}
-
-function CompactReportCardContent({
-  report,
-  distanceBearing,
-}: {
-  report: Report
-  distanceBearing?: string
-}) {
-  const isActive = report.status !== 'resolved'
-  const severityColor = getSeverityColor(report.severity)
-
-  return (
-    <>
-      <ReportThumb report={report} size="sm" severityColor={severityColor} />
-      <div className="flex-1 min-w-0 py-0.5">
-        <h3 className="text-[14px] font-semibold text-[var(--color-fw-text)] leading-tight truncate">
-          {report.location}
-        </h3>
-        <p className="text-[12px] text-[var(--color-fw-text-secondary)] mt-0.5 truncate">
-          {[distanceBearing, issueTypeLabels[report.type], statusLabels[report.status]]
-            .filter(Boolean)
-            .join(' · ')}
-        </p>
-      </div>
-      {isActive && (report.avoidArea || report.severity === 'critical') && (
-        <span
-          className="shrink-0 self-center text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-md bg-red-50 text-red-700"
-          aria-label="Avoid this area"
-        >
-          Avoid
-        </span>
-      )}
-    </>
-  )
-}
-
-function ReportThumb({
-  report,
-  size,
-  severityColor,
-}: {
-  report: Report
-  size: 'sm' | 'md'
-  severityColor?: string
-}) {
-  const dimensions = size === 'sm' ? 'w-[68px] h-[52px] rounded-lg' : 'w-14 h-14 rounded-xl'
-
-  return (
-    <div
-      className={`${dimensions} shrink-0 bg-[var(--color-fw-surface-secondary)] border border-[var(--color-fw-divider)] flex items-center justify-center overflow-hidden relative`}
-      style={severityColor ? { boxShadow: `inset 3px 0 0 ${severityColor}` } : undefined}
-      aria-hidden
-    >
-      {report.photoCount > 0 ? (
-        <div className="w-full h-full bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center relative">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-            <rect x="3" y="5" width="18" height="14" rx="1" />
-          </svg>
-        </div>
-      ) : (
-        <IssueTypeIcon type={report.type} />
-      )}
-    </div>
   )
 }
 
