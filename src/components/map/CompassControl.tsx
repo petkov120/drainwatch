@@ -1,30 +1,40 @@
 interface CompassControlProps {
   onResetNorth?: () => void
   bearing?: number
+  size?: number
 }
 
-export function CompassControl({ onResetNorth, bearing = 0 }: CompassControlProps) {
+export function CompassControl({ onResetNorth, bearing = 0, size = 36 }: CompassControlProps) {
+  const half = size / 2
+  const r = half - 2
   return (
     <button
       type="button"
       onClick={onResetNorth}
-      className="fw-compass"
+      className="fw-compass p-0 border-none bg-transparent"
       aria-label="Reset map to north"
       title="Reset north"
     >
       <svg
-        width="36"
-        height="36"
-        viewBox="0 0 36 36"
+        width={size}
+        height={size}
+        viewBox={`0 0 ${size} ${size}`}
         fill="none"
         aria-hidden
         style={{ transform: `rotate(${-bearing}deg)`, transition: 'transform 0.3s ease' }}
       >
-        <circle cx="18" cy="18" r="16" fill="white" stroke="#d2d2d7" strokeWidth="1" />
-        {/* N pointer */}
-        <path d="M18 6 L20 18 L18 16 L16 18 Z" fill="#dc2626" />
-        <path d="M18 30 L16 18 L18 20 L20 18 Z" fill="#86868b" />
-        <text x="18" y="5" textAnchor="middle" fontSize="6" fontWeight="700" fill="#dc2626">N</text>
+        <circle cx={half} cy={half} r={r} fill="white" stroke="#d2d2d7" strokeWidth="1" />
+        <path
+          d={`M${half} ${half - r + 2} L${half + 2} ${half} L${half} ${half - 2} L${half - 2} ${half} Z`}
+          fill="#dc2626"
+        />
+        <path
+          d={`M${half} ${half + r - 2} L${half - 2} ${half} L${half} ${half + 2} L${half + 2} ${half} Z`}
+          fill="#86868b"
+        />
+        <text x={half} y={half - r + 1} textAnchor="middle" fontSize={size * 0.17} fontWeight="700" fill="#dc2626">
+          N
+        </text>
       </svg>
     </button>
   )
