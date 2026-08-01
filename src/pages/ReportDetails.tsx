@@ -8,18 +8,21 @@ import {
   VerificationBadge,
   AvoidBadge,
 } from '../components/badges/ReportBadges'
+import { useReports } from '../context/ReportsContext'
 import { useIsDesktop } from '../hooks/useMediaQuery'
-import { mockReports, issueTypeLabels } from '../data/mock'
+import { issueTypeLabels } from '../data/mock'
 
 export function ReportDetailsPage() {
   const { id } = useParams()
   const isDesktop = useIsDesktop()
+  const { reports, getReport, confirmReport, hasConfirmed } = useReports()
 
   if (isDesktop && id) {
     return <Navigate to={`/?report=${id}`} replace />
   }
 
-  const report = mockReports.find((r) => r.id === id) ?? mockReports[0]
+  const report = (id ? getReport(id) : undefined) ?? reports[0]
+  const confirmed = hasConfirmed(report.id)
 
   return (
     <div className="flex-1 overflow-y-auto bg-white pb-8">
@@ -76,8 +79,13 @@ export function ReportDetailsPage() {
             <p className="text-[14px] text-[var(--color-fw-text-secondary)] mb-4">
               {report.confirmations} confirmations
             </p>
-            <button type="button" className="fw-btn-primary w-full">
-              Confirm this issue
+            <button
+              type="button"
+              onClick={() => confirmReport(report.id)}
+              disabled={confirmed}
+              className="fw-btn-primary w-full disabled:opacity-70"
+            >
+              {confirmed ? '✓ You confirmed this issue' : 'Confirm this issue'}
             </button>
           </section>
         </div>
