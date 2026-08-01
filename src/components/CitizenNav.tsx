@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react'
 import { NavLink, Link } from 'react-router-dom'
+import { FloodWatchLogo } from './FloodWatchLogo'
 import { NavSceneThumb, type NavSceneType } from './nav/NavSceneThumb'
 
 export const citizenTabs = [
@@ -19,11 +20,14 @@ interface NavTab {
 
 export function NavLogo({ compact }: { compact?: boolean }) {
   return (
-    <Link to="/" className="no-underline hover:no-underline shrink-0">
-      <div className={compact ? 'fw-type-brand' : 'text-lg font-bold tracking-tight text-[var(--color-fw-text)]'}>
-        FloodWatch
+    <Link to="/" className="no-underline hover:no-underline shrink-0 flex items-center gap-2.5" aria-label="Drainwatch home">
+      <FloodWatchLogo size={compact ? 30 : 36} className="shrink-0" />
+      <div>
+        <div className={compact ? 'fw-type-brand' : 'text-lg font-bold tracking-tight text-[var(--color-fw-text)]'}>
+          Drainwatch
+        </div>
+        <div className="fw-type-brand-sub mt-0.5">Lagos</div>
       </div>
-      <div className="fw-type-brand-sub mt-0.5">Lagos</div>
     </Link>
   )
 }
