@@ -40,7 +40,11 @@ export function loadUserSession(): UserSession {
 }
 
 export function saveUserSession(session: UserSession): void {
-  localStorage.setItem(USER_SESSION_KEY, JSON.stringify(session))
+  try {
+    localStorage.setItem(USER_SESSION_KEY, JSON.stringify(session))
+  } catch {
+    // Keep authentication state in memory when persistence is unavailable.
+  }
 }
 
 export function signInDemoUser(): UserSession {
@@ -54,5 +58,9 @@ export function signOutUser(): UserSession {
 }
 
 export function clearUserSession(): void {
-  localStorage.removeItem(USER_SESSION_KEY)
+  try {
+    localStorage.removeItem(USER_SESSION_KEY)
+  } catch {
+    // Storage may be disabled by browser privacy settings.
+  }
 }
