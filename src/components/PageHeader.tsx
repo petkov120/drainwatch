@@ -16,11 +16,23 @@ export function PageHeader({ title, subtitle }: PageHeaderProps) {
   )
 }
 
-export function PageShell({ header, children }: { header?: ReactNode; children: ReactNode }) {
+export function PageShell({
+  header,
+  children,
+  bodyClassName,
+}: {
+  header?: ReactNode
+  children: ReactNode
+  bodyClassName?: string
+}) {
+  const bodyClasses = bodyClassName
+    ? `flex-1 min-h-0 ${bodyClassName}`
+    : 'flex-1 min-h-0 overflow-y-auto px-6 py-6 lg:px-8 lg:py-8'
+
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
+    <div className="flex-1 flex flex-col overflow-hidden min-h-0">
       {header}
-      <div className="flex-1 overflow-y-auto px-6 py-6 lg:px-8 lg:py-8">{children}</div>
+      <div className={bodyClasses}>{children}</div>
     </div>
   )
 }
