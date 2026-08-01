@@ -26,16 +26,16 @@ export function ReportTimeline({ events }: { events: TimelineEvent[] }) {
           >
             {eventIcons[event.type]}
           </span>
-          <div className="pt-1 min-w-0">
-            <p className="text-[14px] font-semibold text-[var(--color-fw-text)]">
+          <div className="pt-1 min-w-0 space-y-1">
+            <p className="fw-type-body font-semibold">
               {event.title}
             </p>
             {event.description && (
-              <p className="text-[13px] text-[var(--color-fw-text-secondary)] mt-0.5">
+              <p className="fw-type-meta">
                 {event.description}
               </p>
             )}
-            <p className="text-[12px] text-[var(--color-fw-text-tertiary)] mt-1">
+            <p className="fw-type-caption normal-case tracking-normal">
               {event.timestamp}
               {event.actor && ` · ${event.actor}`}
             </p>
