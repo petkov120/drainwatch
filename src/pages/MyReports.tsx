@@ -1,59 +1,66 @@
-import { useState } from 'react'
-import { ReportRow } from '../components/ReportRow'
-import { PageHeader, PageShell } from '../components/PageHeader'
+import { useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { EmptyState } from '../components/EmptyState'
+import { NearbyReportCard } from '../components/NearbyReportCard'
+import { PageShell } from '../components/PageHeader'
+import {
+  ReportStatusFilter,
+  type StatusFilter,
+} from '../components/report/ReportStatusFilter'
 import { useReports } from '../context/ReportsContext'
-import { ReportStatus } from '../data/mock'
-
-type Filter = 'all' | ReportStatus
 
 export function MyReportsPage() {
   const { reports } = useReports()
-  const [filter, setFilter] = useState<Filter>('all')
+  const [filter, setFilter] = useState<StatusFilter>('all')
 
-  const filtered = reports.filter((r) =>
-    filter === 'all' ? true : r.status === filter
+  const filtered = useMemo(
+    () =>
+      reports.filter((r) => {
+        if (filter === 'all') return true
+        if (filter === 'active') return r.status !== 'resolved'
+        return r.status === 'resolved'
+      }),
+    [filter, reports]
   )
 
-  const filters: { key: Filter; label: string }[] = [
-    { key: 'all', label: 'All' },
-    { key: 'received', label: 'Active' },
-    { key: 'resolved', label: 'Resolved' },
-  ]
-
   return (
-    <PageShell header={<PageHeader title="My reports" subtitle="Reports you have submitted" />}>
-      <div className="max-w-3xl mx-auto lg:max-w-2xl">
-        <h1 className="fw-type-display lg:hidden mb-6">My reports</h1>
-
-        <nav className="flex gap-5 mb-6 border-b border-[var(--color-fw-divider)]" aria-label="Filter reports">
-          {filters.map(({ key, label }) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => setFilter(key)}
-              className={`pb-3 fw-type-nav bg-transparent border-none cursor-pointer -mb-px ${
-                filter === key
-                  ? 'text-[var(--color-fw-text)] border-b-2 border-[var(--color-fw-text)]'
-                  : 'text-[var(--color-fw-link)]'
-              }`}
-            >
-              {label}
-              {key === 'received' && ` (${reports.filter((r) => r.status !== 'resolved').length})`}
-              {key === 'resolved' && ` (${reports.filter((r) => r.status === 'resolved').length})`}
-            </button>
-          ))}
-        </nav>
-
-        {filtered.length === 0 ? (
-          <p className="mt-10 fw-type-body text-[var(--color-fw-text-secondary)]">
-            No reports yet. Tap Report to submit an issue.
-          </p>
-        ) : (
-          <div className="fw-panel-card">
-            {filtered.map((report) => (
-              <ReportRow key={report.id} report={report} />
-            ))}
+    <PageShell bodyClassName="flex flex-col overflow-hidden">
+      <header className="fw-panel-header shrink-0 overflow-x-hidden">
+        <div className="flex items-center justify-between gap-4 px-5 py-4 lg:px-6">
+          <div className="min-w-0">
+            <h1 className="fw-type-display truncate">
+              {filtered.length} report{filtered.length === 1 ? '' : 's'}
+            </h1>
+            <p className="fw-type-meta mt-1">Submitted by you</p>
           </div>
+        </div>
+        <div className="px-5 pt-1 pb-4 lg:px-5" data-tour="my-reports-filter">
+          <ReportStatusFilter value={filter} onChange={setFilter} reports={reports} />
+        </div>
+      </header>
+
+      <div
+        className="flex-1 overflow-y-auto overflow-x-hidden min-h-0 px-4 pt-5 pb-6 space-y-3.5"
+        aria-label="My reports"
+      >
+        {filtered.length === 0 ? (
+          <EmptyState
+            title="No reports here"
+            description={
+              filter === 'all'
+                ? 'You have not submitted any issues yet. Report flooding or drainage problems nearby.'
+                : 'No reports match this filter. Try another or submit a new issue.'
+            }
+            action={
+              <Link to="/report" className="fw-btn-primary no-underline hover:no-underline">
+                Report issue
+              </Link>
+            }
+          />
+        ) : (
+          filtered.map((report) => (
+            <NearbyReportCard key={report.id} report={report} />
+          ))
         )}
       </div>
     </PageShell>
