@@ -11,7 +11,7 @@ export const citizenTabs = [
 
 function navLinkClass(isActive: boolean, horizontal: boolean) {
   if (horizontal) {
-    return `px-3 py-1.5 text-[13px] font-medium rounded-full no-underline hover:no-underline transition-colors ${
+    return `fw-type-nav px-3.5 py-2 rounded-full no-underline hover:no-underline transition-colors ${
       isActive
         ? 'bg-[var(--color-fw-text)] text-white'
         : 'text-[var(--color-fw-text-secondary)] hover:bg-white/60 hover:text-[var(--color-fw-text)]'
@@ -27,19 +27,19 @@ function navLinkClass(isActive: boolean, horizontal: boolean) {
 export function NavLogo({ compact }: { compact?: boolean }) {
   return (
     <Link to="/" className="no-underline hover:no-underline shrink-0">
-      <div className={`font-semibold text-[var(--color-fw-text)] tracking-tight leading-tight ${compact ? 'text-[15px]' : 'text-lg'}`}>
+      <div className={compact ? 'fw-type-brand' : 'text-lg font-bold tracking-tight text-[var(--color-fw-text)]'}>
         FloodWatch
       </div>
-      <div className="text-[11px] text-[var(--color-fw-text-secondary)]">Lagos</div>
+      <div className="fw-type-brand-sub mt-0.5">Lagos</div>
     </Link>
   )
 }
 
-/** Glass chip nav — map overlay (desktop) */
+/** Glass chip nav — floating pill tabs */
 export function NavGlassChip({ className = '', style }: { className?: string; style?: CSSProperties }) {
   return (
     <nav
-      className={`fw-glass-chip p-1 flex items-center gap-0.5 pointer-events-auto ${className}`}
+      className={`fw-float-pill p-1 flex items-center gap-0.5 pointer-events-auto ${className}`}
       style={style}
       aria-label="Main navigation"
     >
@@ -52,29 +52,47 @@ export function NavGlassChip({ className = '', style }: { className?: string; st
   )
 }
 
-/** Top bar — logo + glass chip (map overlay or in-flow) */
-export function NavTopBar({ overlay = false }: { overlay?: boolean }) {
-  const bar = (
-    <div className="flex items-center gap-3">
-      <div className="fw-glass-chip pointer-events-auto px-4 py-2 shrink-0">
-        <NavLogo compact />
+/** Map overlay — split floating pills (reference: canvas UI) */
+export function NavMapOverlay() {
+  return (
+    <>
+      <div className="absolute top-4 left-4 z-[500] hidden lg:flex items-center gap-3 pointer-events-none">
+        <div className="fw-float-pill pointer-events-auto flex items-center gap-3 pl-4 pr-3 py-2 shrink-0">
+          <NavLogo compact />
+          <span className="w-px h-5 bg-[var(--color-fw-divider)] shrink-0" aria-hidden />
+          <Link
+            to="/report"
+            className="fw-type-nav text-[var(--color-fw-text)] no-underline hover:no-underline whitespace-nowrap"
+          >
+            Report
+          </Link>
+        </div>
+        <NavGlassChip className="pointer-events-auto shrink-0" />
       </div>
-      <NavGlassChip className="pointer-events-auto shrink-0" />
-    </div>
+      <NavMobilePill />
+    </>
   )
+}
 
-  if (overlay) {
-    return (
-      <>
-        <div className="absolute top-4 left-4 z-[500] hidden lg:flex pointer-events-none">{bar}</div>
-        <NavMobilePill />
-      </>
-    )
-  }
+/** Top bar — in-flow pages */
+export function NavTopBar({ overlay = false }: { overlay?: boolean }) {
+  if (overlay) return <NavMapOverlay />
 
   return (
     <>
-      <header className="hidden lg:flex shrink-0 px-4 pt-4 pb-2">{bar}</header>
+      <header className="hidden lg:flex shrink-0 px-4 pt-4 pb-2 items-center gap-3">
+        <div className="fw-float-pill flex items-center gap-3 pl-4 pr-3 py-2 shrink-0">
+          <NavLogo compact />
+          <span className="w-px h-5 bg-[var(--color-fw-divider)] shrink-0" aria-hidden />
+          <Link
+            to="/report"
+            className="fw-type-nav text-[var(--color-fw-text)] no-underline hover:no-underline"
+          >
+            Report
+          </Link>
+        </div>
+        <NavGlassChip className="shrink-0" />
+      </header>
       <NavMobilePill />
     </>
   )
@@ -115,11 +133,6 @@ export function NavMobilePill() {
       ))}
     </nav>
   )
-}
-
-/** Map page overlay — same top nav as other routes */
-export function NavMapOverlay() {
-  return <NavTopBar overlay />
 }
 
 function MapIcon({ active, size = 26 }: { active?: boolean; size?: number }) {
