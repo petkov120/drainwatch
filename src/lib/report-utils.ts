@@ -8,6 +8,7 @@ import {
   severityLabels,
   accessibilityLabels,
   issueTypeLabels,
+  statusLabels,
 } from '../data/mock'
 
 export function getVerificationLevel(confirmations: number): VerificationLevel {
@@ -89,4 +90,72 @@ export function getSeverityRingWidth(severity: Severity): number {
 
 export function shouldPulseMarker(report: Report): boolean {
   return report.severity === 'critical' && report.status !== 'resolved'
+}
+
+export function getStatusProgressSubtitle(report: Report): string {
+  switch (report.status) {
+    case 'received':
+      return 'Report received — shared with response teams'
+    case 'in_progress':
+      return report.govResponses[0]
+        ? `${report.govResponses[0].agency} is responding`
+        : 'Response team dispatched'
+    case 'resolved': {
+      const resolvedEvent = [...report.timeline].reverse().find((e) => e.type === 'resolved')
+      if (resolvedEvent) {
+        const date = resolvedEvent.timestamp.split(',')[0]
+        return `Issue cleared · ${date}`
+      }
+      return 'Issue cleared — area passable'
+    }
+  }
+}
+
+/** Foot copy for the status stepper — primary = latest signal, secondary = context. */
+export function getStatusFootContent(report: Report): {
+  primary: string
+  secondary: string | null
+  variant: 'check' | 'gov' | 'neutral'
+  statusLabel: string
+  tooltip: string
+} {
+  const context = getStatusProgressSubtitle(report)
+  const latest = report.timeline[report.timeline.length - 1]
+  const latestDate = latest?.timestamp.split(',')[0]
+  const statusLabel = statusLabels[report.status]
+
+  const tooltipParts = [
+    context,
+    latest?.description,
+    report.confirmations > 0 ? `${report.confirmations} community confirmations` : null,
+  ].filter(Boolean)
+
+  if (report.govResponses[0] && report.status !== 'received') {
+    const gov = report.govResponses[0]
+    return {
+      primary: gov.message,
+      secondary: `${gov.timestamp.split(',')[0]} · ${context}`,
+      variant: 'gov',
+      statusLabel,
+      tooltip: [gov.message, gov.agency, context].filter(Boolean).join(' · '),
+    }
+  }
+
+  if (latest && latest.type !== 'reported') {
+    return {
+      primary: latest.title,
+      secondary: latestDate ? `${latestDate} · ${context}` : context,
+      variant: latest.type === 'confirmed' || latest.type === 'resolved' ? 'check' : 'neutral',
+      statusLabel,
+      tooltip: tooltipParts.join(' · '),
+    }
+  }
+
+  return {
+    primary: context,
+    secondary: latest && latestDate ? `${latestDate} · ${latest.title}` : null,
+    variant: 'neutral',
+    statusLabel,
+    tooltip: tooltipParts.join(' · '),
+  }
 }
